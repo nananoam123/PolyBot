@@ -5,6 +5,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'echo building...'
+                sh '/usr/local/bin/aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/b1o7b4g2'
             }
         }
         stage('Stage II') {

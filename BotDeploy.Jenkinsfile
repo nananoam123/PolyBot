@@ -18,7 +18,6 @@ pipeline {
             }
             steps {
                 sh 'echo Generating...'
-                '''
             }
         }
 
@@ -33,4 +32,3 @@ pipeline {
             }
         }
     }
-}

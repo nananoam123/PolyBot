@@ -13,7 +13,7 @@ pipeline {
         }
 
         stage("Generate Ansible Inventory") {
-            environment {
+          //  environment {
                
             }
             steps {

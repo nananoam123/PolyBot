@@ -14,23 +14,26 @@ pipeline {
                 sh 'docker build -t $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG .'
                 sh 'docker push $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG'
             }
-            post {
+            
+        }
+        
+        stage('prune') {
+            steps {
+                sh 'echo "stage II..."'
+                post {
                 always {
                     sh '''
                     docker image prune -f --filter "until=240h"
                     '''
                 }
             }
-        }
-        
-        stage('Stage II') {
-            steps {
-                sh 'echo "stage II..."'
             }
         }
-        stage('Stage III ...') {
+        stage('Trigger Deploy') {
             steps {
-                sh 'echo echo "stage III..."'
+                build job: 'BotDeploy', wait: false, parameters: [
+                    string(name: 'BOT_IMAGE_NAME', value: "$REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG")
+                ]
             }
         }
     }

@@ -14,15 +14,15 @@ pipeline {
                 sh 'docker build -t $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG .'
                 sh 'docker push $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG'
             }
-            
-        }
-        post {
+            post {
                 always {
                     sh '''
                     docker image prune -f --filter "until=240h"
                     '''
                 }
             }
+        }
+        
         stage('Stage II') {
             steps {
                 sh 'echo "stage II..."'

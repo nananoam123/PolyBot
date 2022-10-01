@@ -1,33 +1,21 @@
 pipeline {
     agent any
 
-    parameters {
-        string(name: 'BOT_IMAGE_NAME')
-    }
-
     stages {
-        stage("Install Ansible") {
+        stage('Build') {
             steps {
-                sh 'echo installing...'
+                sh 'echo building...'
             }
         }
-
-        stage("Generate Ansible Inventory") {
-          //  environment {
-               
-            }
+        stage('Stage II') {
             steps {
-                sh 'echo Generating...'
+                sh 'echo "stage II..."'
             }
         }
-
-        stage('Ansible Bot Deploy') {
-            environment {
-               
-            }
-
+        stage('Stage III ...') {
             steps {
-                sh 'echo deploying...'
-                }
+                sh 'echo echo "stage III..."'
             }
         }
+    }
+}

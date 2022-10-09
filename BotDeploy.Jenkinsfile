@@ -1,20 +1,46 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'BOT_IMAGE_NAME')
+    }
+
     stages {
-        stage('Build') {
+        stage("Install Ansible") {
             steps {
-                sh 'echo building...'
+                sh 'python3 -m pip install ansible'
+                sh '/var/lib/jenkins/.local/bin/ansible-galaxy collection install community.general'
             }
         }
-        stage('Stage II') {
+
+        stage("Generate Ansible Inventory") {
+            environment {
+                BOT_EC2_APP_TAG = "Noambot"
+                BOT_EC2_REGION = "eu-west-1"
+            }
             steps {
-                sh 'echo "stage II..."'
+                sh 'aws ec2 describe-instances --region $BOT_EC2_REGION --filters "Name=tag:App,Values=$BOT_EC2_APP_TAG" --query "Reservations[].Instances[]" > hosts.json'
+                sh 'python3 prepare_ansible_inv.py'
+                sh '''
+                echo "Inventory generated"
+                cat hosts
+                '''
             }
         }
-        stage('Stage III ...') {
+
+        stage('Ansible Bot Deploy') {
+            environment {
+                ANSIBLE_HOST_KEY_CHECKING = 'False'
+                REGISTRY_URL = 'public.ecr.aws/b1o7b4g2'
+                REGISTRY_REGION = 'eu-west-1'
+            }
+
             steps {
-                sh 'echo echo "stage III..."'
+                withCredentials([sshUserPrivateKey(credentialsId: 'bot-instances', usernameVariable: 'ssh_user', keyFileVariable: 'privatekey')]) {
+                    sh '''
+                    /var/lib/jenkins/.local/bin/ansible-playbook botDeploy.yaml --extra-vars "registry_region=$REGISTRY_REGION  registry_url=$REGISTRY_URL bot_image=$BOT_IMAGE_NAME" --user=${ssh_user} -i hosts --private-key ${privatekey}
+                    '''
+                }
             }
         }
     }

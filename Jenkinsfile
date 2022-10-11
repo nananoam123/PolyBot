@@ -13,7 +13,14 @@ pipeline {
                 sh '/usr/local/bin/aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REGISTRY_URL'
                 sh 'docker build -t $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG .'
                 sh 'docker push $REGISTRY_URL/$IMAGE_NAME:$IMAGE_TAG'
+                
+                withCredentials([string(credentialsId: 'snyk', variable: 'SNYK_TOKEN')]) {
+                    sh '''
+                    snyk container test $IMAGE_NAME:$IMAGE_TAG --severity-threshold=high --file=Dockerfile
+                    '''
+                }
             }
+            
             post {
                 always {
                     sh '''
